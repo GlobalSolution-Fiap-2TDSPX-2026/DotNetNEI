@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NEI.Models;
 
 namespace NEI.Data
 {
@@ -9,7 +10,10 @@ namespace NEI.Data
         {
         }
 
-
+        public DbSet<Asteroid> Asteroids { get; set; }
+        public DbSet<CloseApproach> CloseApproaches { get; set; }
+        public DbSet<RiskAssessment> RiskAssessments { get; set; }
+        public DbSet<RiskZone> RiskZones { get; set; }
 
     }
 }

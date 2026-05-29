@@ -23,7 +23,7 @@ public class RiskAssessment
     public Asteroid Asteroid { get; set; }
 
     [Required]
-    [Column("RISK_LEVEL")]
+    [Column("RISK_LEVEL", TypeName = "VARCHAR2(7)")]
     public RiskLevel RiskLevel { get; set; }
 
     [Required]
