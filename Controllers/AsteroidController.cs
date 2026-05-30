@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NEI.Data;
+using NEI.Models;
 
 namespace NEI
 {
@@ -20,6 +21,16 @@ namespace NEI
         public async Task<IActionResult> GetAll()
         {
             var asteroids = await _context.Asteroids.ToListAsync();
+            return Ok(asteroids);
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<List<Asteroid>>> GetByName(string name)
+        {
+            var asteroids = await _context.Asteroids
+                .Where(a => a.Name.Contains(name))
+                .ToListAsync();
+
             return Ok(asteroids);
         }
 
