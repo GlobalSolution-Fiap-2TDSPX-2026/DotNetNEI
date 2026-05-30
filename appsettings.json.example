@@ -8,5 +8,9 @@
   "AllowedHosts": "*",
   "ConnectionStrings": {
     "OracleConnection": "User Id=;Password=;Data Source=;"
+  },
+  "NasaApi": {
+    "BaseUrl": "https://api.nasa.gov/neo/rest/v1/",
+    "ApiKey": "SUA_API_KEY_AQUI"
   }
 }

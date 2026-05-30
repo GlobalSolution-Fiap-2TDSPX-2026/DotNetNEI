@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NEI.Data;
+using NEI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +12,15 @@ builder.Services.AddDbContext<AppDbContext>
     b => b.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19))
 );
 
+builder.Services.AddHttpClient("NasaClient", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NasaApi:BaseUrl"]);
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<NasaIntegrationService>();
 
 var app = builder.Build();
 
