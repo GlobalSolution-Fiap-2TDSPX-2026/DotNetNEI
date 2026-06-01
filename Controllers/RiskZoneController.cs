@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NEI.Data;
 
 namespace NEI
@@ -14,6 +15,13 @@ namespace NEI
         public RiskZoneController(AppDbContext context)
         {
             _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var zones = await _context.RiskZones.ToListAsync();
+            return Ok(zones);
         }
 
         [HttpGet("{id}")]
