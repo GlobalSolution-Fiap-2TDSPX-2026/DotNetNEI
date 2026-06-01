@@ -12,13 +12,12 @@ public class RiskZone
     [Column("ID")]
     public int Id { get; set; }
 
-    [Required]
     [Column("RISK_ASSESSMENT_ID")]
-    public int RiskAssessmentId { get; set; }
+    public int? RiskAssessmentId { get; set; }
 
     [JsonIgnore]
     [ForeignKey("RiskAssessmentId")]
-    public RiskAssessment RiskAssessment { get; set; }
+    public RiskAssessment? RiskAssessment { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -33,11 +32,9 @@ public class RiskZone
     [Column("LONGITUDE", TypeName = "NUMBER(5,2)")]
     public decimal Longitude { get; set; }
 
-    [Required]
     [Column("RADIUS_KM", TypeName = "NUMBER(18,2)")]
-    public decimal RadiusKm { get; set; }
+    public decimal? RadiusKm { get; set; }
 
-    [Required]
     [Column("ALERT_LEVEL", TypeName = "VARCHAR2(6)")]
-    public AlertLevel AlertLevel { get; set; }
+    public AlertLevel? AlertLevel { get; set; }
 }
