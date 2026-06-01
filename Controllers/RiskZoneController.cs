@@ -24,8 +24,9 @@ namespace NEI
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(RiskZone riskZone)
+        public async Task<IActionResult> Create(RiskZoneRequest request)
         {
+            var riskZone = request.ToEntity();
             _context.Add(riskZone);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetById), new { id = riskZone.Id }, riskZone);
