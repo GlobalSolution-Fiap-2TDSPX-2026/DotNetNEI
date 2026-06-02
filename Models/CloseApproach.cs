@@ -39,4 +39,18 @@ public class CloseApproach
     [Column("ORBITING_BODY")]
     public string OrbitingBody { get; set; }
 
+    public void Update(
+        int asteroidId,
+        DateTime approachDate,
+        decimal missDistanceKm,
+        decimal relativeVelocityKm,
+        string orbitingBody)
+    {
+        AsteroidId = asteroidId;
+        ApproachDate = approachDate;
+        MissDistanceKm = missDistanceKm;
+        RelativeVelocityKm = relativeVelocityKm;
+        OrbitingBody = orbitingBody;
+    }
+
 }

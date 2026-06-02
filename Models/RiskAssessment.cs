@@ -38,4 +38,18 @@ public class RiskAssessment
     [Column("ASSESSED_AT")]
     public DateTime AssessedAt { get; set; }
 
+    public void Update(
+        int asteroidId,
+        RiskLevel riskLevel,
+        decimal missDistanceKm,
+        decimal safeDistanceThresholdKm,
+        DateTime assessedAt)
+    {
+        AsteroidId = asteroidId;
+        RiskLevel = riskLevel;
+        MissDistanceKm = missDistanceKm;
+        SafeDistanceThresholdKm = safeDistanceThresholdKm;
+        AssessedAt = assessedAt;
+    }
+
 }
