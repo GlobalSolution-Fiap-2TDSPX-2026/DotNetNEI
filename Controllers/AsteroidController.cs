@@ -24,6 +24,14 @@ namespace NEI
             return Ok(asteroids);
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var asteroid = await _context.Asteroids.FindAsync(id);
+            if (asteroid == null) return NotFound();
+            return Ok(asteroid);
+        }
+
         [HttpGet("search")]
         public async Task<ActionResult<List<Asteroid>>> GetByName(string name)
         {
@@ -33,7 +41,6 @@ namespace NEI
 
             return Ok(asteroids);
         }
-
 
     }
 }

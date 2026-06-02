@@ -17,7 +17,12 @@ builder.Services.AddHttpClient("NasaClient", client =>
     client.BaseAddress = new Uri(builder.Configuration["NasaApi:BaseUrl"]);
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Adiciona o conversor global para transformar Enums em Strings no JSON de saída
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<NasaIntegrationService>();

@@ -40,6 +40,18 @@ namespace NEI
             return CreatedAtAction(nameof(GetById), new { id = riskZone.Id }, riskZone);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] RiskZoneRequest updatedZone)
+        {
+            var zone = await _context.RiskZones.FindAsync(id);
+
+            if (zone == null) return NotFound();
+
+            zone.Update(updatedZone.RegionName, updatedZone.Latitude, updatedZone.Longitude);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

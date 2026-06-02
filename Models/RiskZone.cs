@@ -37,4 +37,15 @@ public class RiskZone
 
     [Column("ALERT_LEVEL", TypeName = "VARCHAR2(6)")]
     public AlertLevel? AlertLevel { get; set; }
+
+
+    public void Update(string regionName, decimal latitude, decimal longitude)
+        {
+            this.RegionName = regionName;
+            this.Latitude = latitude;
+            this.Longitude = longitude;
+        }
+
+
+
 }
