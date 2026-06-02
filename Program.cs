@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NEI;
 using NEI.Data;
 using NEI.Services;
 
@@ -26,6 +27,8 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<NasaIntegrationService>();
+builder.Services.AddScoped<CloseApproachService>();
+builder.Services.AddScoped<RiskAssessmentService>();
 
 var app = builder.Build();
 

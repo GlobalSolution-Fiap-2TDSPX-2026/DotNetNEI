@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using NEI.Data;
 using NEI.Models;
@@ -10,12 +11,18 @@ namespace NEI.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _dbContext;
-        public NasaIntegrationService(IHttpClientFactory httpClientFactory, IConfiguration configuration, AppDbContext dbContext)
+        private readonly CloseApproachService _closeApproachService;
+        private readonly RiskAssessmentService _riskAssessmentService;
+
+        public NasaIntegrationService(IHttpClientFactory httpClientFactory, IConfiguration configuration, 
+                                        AppDbContext dbContext, CloseApproachService closeApproachService,
+                                        RiskAssessmentService riskAssessmentService)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _dbContext = dbContext;
-
+            _closeApproachService = closeApproachService;
+            _riskAssessmentService = riskAssessmentService;
         }
 
         public async Task SyncAsteroidsAsync(DateTime startDate, DateTime endDate)
@@ -25,126 +32,49 @@ namespace NEI.Services
             var start = startDate.ToString("yyyy-MM-dd");
             var end = endDate.ToString("yyyy-MM-dd");
 
-            // requisição
             var response = await client.GetAsync($"feed?start_date={start}&end_date={end}&api_key={apiKey}");
             response.EnsureSuccessStatusCode();
 
-            // reesposta como texto puro
             var jsonString = await response.Content.ReadAsStringAsync();
-            // pega o texto puro e joga dentro das classes DTOs para ser um objeto C#.
             var feedData = JsonSerializer.Deserialize<NasaFeedResponse>(jsonString);
 
             if (feedData?.NearEarthObjects == null) return;
 
-            // O JSON da NASA agrupa os asteroides por dia. Primeiro olha para os dias, depois para os asteroides dentro daquele dia.
             foreach (var dateKey in feedData.NearEarthObjects.Keys)
             {
                 foreach (var neo in feedData.NearEarthObjects[dateKey])
                 {
-                    // 1. Verifica se o asteroide já existe usando o índice único
-                    var asteroid = _dbContext.Asteroids.FirstOrDefault(a => a.NasaId == neo.Id);
-                    
-                    if (asteroid == null)
-                    {
-                        asteroid = new Asteroid
-                        {
-                            NasaId = neo.Id,
-                            Name = neo.Name,
-                            AbsoluteMagnitude = (decimal)neo.AbsoluteMagnitude,
-                            EstimatedDiameterMinKm = neo.EstimatedDiameter.Kilometers.Min,
-                            EstimatedDiameterMaxKm = neo.EstimatedDiameter.Kilometers.Max,
-                            IsPotentiallyDangerous = neo.IsPotentiallyHazardous
-                        };
-                        _dbContext.Asteroids.Add(asteroid);
-                        await _dbContext.SaveChangesAsync(); 
-                    }
-
-                    // 2. Registra as aproximações e gera as Avaliações de Risco
-                    foreach (var approach in neo.CloseApproachData)
-                    {
-                        var approachDate = DateTime.Parse(approach.CloseApproachDate);
-                        decimal missDistance = decimal.Parse(approach.MissDistance.Kilometers, 
-                                                            System.Globalization.CultureInfo.InvariantCulture);
-
-                        decimal relativeVelocity = decimal.Parse(approach.RelativeVelocity.KilometersPerSecond, 
-                                                                System.Globalization.CultureInfo.InvariantCulture);
-                        
-                        // Evita duplicar a mesma aproximação
-                        if (!_dbContext.CloseApproaches.Any(c => c.AsteroidId == asteroid.Id && c.ApproachDate == approachDate))
-                        {
-                            _dbContext.CloseApproaches.Add(new CloseApproach
-                            {
-                                AsteroidId = asteroid.Id,
-                                ApproachDate = approachDate,
-                                MissDistanceKm = decimal.Parse(approach.MissDistance.Kilometers, System.Globalization.CultureInfo.InvariantCulture),
-                                RelativeVelocityKm = decimal.Parse(approach.RelativeVelocity.KilometersPerSecond, System.Globalization.CultureInfo.InvariantCulture),
-                                OrbitingBody = approach.OrbitingBody
-                            });
-                        }
-
-                        // ====================================================================
-                        // MOTOR DE RISCO
-                        // ====================================================================
-                        
-                        // Limite de segurança: 7.500.000 km (aproximadamente 0.05 AU - Padrão NASA)
-                        decimal safeDistanceThreshold = 7500000m;
-                        RiskLevel calculatedRiskLevel = RiskLevel.LOW;
-
-                        // Regra de classificação
-                        if (neo.IsPotentiallyHazardous && missDistance <= safeDistanceThreshold)
-                            calculatedRiskLevel = RiskLevel.CRITICAL;
-                        else if (!neo.IsPotentiallyHazardous && missDistance <= safeDistanceThreshold)
-                            calculatedRiskLevel = RiskLevel.HIGH;
-                        else if (neo.IsPotentiallyHazardous && missDistance > safeDistanceThreshold)
-                            calculatedRiskLevel = RiskLevel.MEDIUM;
-
-                        // Verifica se já existe uma avaliação de risco para essa mesma data e asteroide
-                        var existingAssessment = _dbContext.RiskAssessments
-                            .FirstOrDefault(ra => ra.AsteroidId == asteroid.Id && ra.AssessedAt == approachDate);
-
-                        if (existingAssessment == null)
-                        {
-                            var riskAssessment = new RiskAssessment
-                            {
-                                AsteroidId = asteroid.Id,
-                                RiskLevel = calculatedRiskLevel,
-                                MissDistanceKm = missDistance,
-                                SafeDistanceThresholdKm = safeDistanceThreshold,
-                                AssessedAt = approachDate // A data da aproximação será a data da avaliação de risco
-                            };
-
-                            _dbContext.RiskAssessments.Add(riskAssessment);
-                            
-                            // Salva no banco
-                            await _dbContext.SaveChangesAsync(); 
-
-                            // Se o risco for Alto ou Crítico, disparamos o alerta para as zonas monitoradas
-                            if (calculatedRiskLevel == RiskLevel.CRITICAL || calculatedRiskLevel == RiskLevel.HIGH)
-                            {
-                                // 1. Busca no banco todas as zonas
-                                var zonasMonitoradas = _dbContext.RiskZones.ToList();
-                                
-                                if (zonasMonitoradas.Any())
-                                {
-                                    // SIMULAÇÃO 
-                                    // escolhemos uma zona cadastrada aleatoriamente para "sofrer" a ameaça
-                                    // e ter dados interessantes no Dashboard.
-                                    var zonaAfetada = zonasMonitoradas[Random.Shared.Next(zonasMonitoradas.Count)];
-                                    
-                                    // Atualiza a zona afetada com o perigo atual
-                                    zonaAfetada.RiskAssessmentId = riskAssessment.Id;
-                                    zonaAfetada.AlertLevel = calculatedRiskLevel == RiskLevel.CRITICAL ? AlertLevel.RED : AlertLevel.ORANGE;
-                                    zonaAfetada.RadiusKm = calculatedRiskLevel == RiskLevel.CRITICAL ? 1000m : 500m;
-                                    
-                                    _dbContext.RiskZones.Update(zonaAfetada);
-                                    await _dbContext.SaveChangesAsync();
-                                }
-                            }
-                        }
-                    }
+                    var asteroid = await UpsertAsteroidAsync(neo);
+                    _closeApproachService.SyncCloseApproaches(asteroid, neo);
+                    await _riskAssessmentService.SyncRiskAssessmentsAsync(asteroid, neo);
                 }
             }
+
             await _dbContext.SaveChangesAsync();
         }
+
+        private async Task<Asteroid> UpsertAsteroidAsync(NasaAsteroidDto neo)
+        {
+            var asteroid = _dbContext.Asteroids.FirstOrDefault(a => a.NasaId == neo.Id);
+
+            if (asteroid != null) return asteroid;
+
+            asteroid = new Asteroid
+            {
+                NasaId = neo.Id,
+                Name = neo.Name,
+                AbsoluteMagnitude = (decimal)neo.AbsoluteMagnitude,
+                EstimatedDiameterMinKm = neo.EstimatedDiameter.Kilometers.Min,
+                EstimatedDiameterMaxKm = neo.EstimatedDiameter.Kilometers.Max,
+                IsPotentiallyDangerous = neo.IsPotentiallyHazardous
+            };
+            _dbContext.Asteroids.Add(asteroid);
+            await _dbContext.SaveChangesAsync();
+
+            return asteroid;
+        }
+
+
+        
     }
 }
