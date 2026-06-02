@@ -40,5 +40,17 @@ namespace NEI
             return CreatedAtAction(nameof(GetById), new { id = riskZone.Id }, riskZone);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var zone = await _context.RiskZones.FindAsync(id);
+
+            if (zone == null) return NotFound($"Pet de id {id} não encontrado");
+
+            _context.RiskZones.Remove(zone);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 }

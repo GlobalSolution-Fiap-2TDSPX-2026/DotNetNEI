@@ -118,22 +118,27 @@ namespace NEI.Services
                             // Salva no banco
                             await _dbContext.SaveChangesAsync(); 
 
-                            // Se o risco for Alto ou Crítico, geramos uma Zona de Risco para o Dashboard
+                            // Se o risco for Alto ou Crítico, disparamos o alerta para as zonas monitoradas
                             if (calculatedRiskLevel == RiskLevel.CRITICAL || calculatedRiskLevel == RiskLevel.HIGH)
                             {
-                                var riskZone = new RiskZone
+                                // 1. Busca no banco todas as zonas
+                                var zonasMonitoradas = _dbContext.RiskZones.ToList();
+                                
+                                if (zonasMonitoradas.Any())
                                 {
-                                    RiskAssessmentId = riskAssessment.Id,
-                                    RegionName = "Zona de Impacto Estimada (Simulação)",
-                                    // Gera coordenadas aleatórias usando Random.Shared do .NET para simular o ponto de queda
-                                    Latitude = (decimal)(Random.Shared.NextDouble() * 180 - 90), 
-                                    Longitude = (decimal)(Random.Shared.NextDouble() * 360 - 180),
-                                    RadiusKm = calculatedRiskLevel == RiskLevel.CRITICAL ? 1000m : 500m, // Raio de destruição
-                                    AlertLevel = calculatedRiskLevel == RiskLevel.CRITICAL ? AlertLevel.RED : AlertLevel.ORANGE
-                                };
-
-                                _dbContext.RiskZones.Add(riskZone);
-                                await _dbContext.SaveChangesAsync(); // Persiste a zona no banco
+                                    // SIMULAÇÃO 
+                                    // escolhemos uma zona cadastrada aleatoriamente para "sofrer" a ameaça
+                                    // e ter dados interessantes no Dashboard.
+                                    var zonaAfetada = zonasMonitoradas[Random.Shared.Next(zonasMonitoradas.Count)];
+                                    
+                                    // Atualiza a zona afetada com o perigo atual
+                                    zonaAfetada.RiskAssessmentId = riskAssessment.Id;
+                                    zonaAfetada.AlertLevel = calculatedRiskLevel == RiskLevel.CRITICAL ? AlertLevel.RED : AlertLevel.ORANGE;
+                                    zonaAfetada.RadiusKm = calculatedRiskLevel == RiskLevel.CRITICAL ? 1000m : 500m;
+                                    
+                                    _dbContext.RiskZones.Update(zonaAfetada);
+                                    await _dbContext.SaveChangesAsync();
+                                }
                             }
                         }
                     }
