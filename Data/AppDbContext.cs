@@ -14,6 +14,7 @@ namespace NEI.Data
         public DbSet<CloseApproach> CloseApproaches { get; set; }
         public DbSet<RiskAssessment> RiskAssessments { get; set; }
         public DbSet<RiskZone> RiskZones { get; set; }
+        public DbSet<User> Users { get; set; }
 
     }
 }
