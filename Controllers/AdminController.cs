@@ -47,8 +47,6 @@ namespace NEI.Controllers
                     .SetProperty(z => z.AlertLevel, (AlertLevel?)null)
                     .SetProperty(z => z.RadiusKm, (decimal?)null));
 
-            await _context.RiskAssessments.ExecuteDeleteAsync();
-            await _context.CloseApproaches.ExecuteDeleteAsync();
             await _context.Asteroids.ExecuteDeleteAsync();
 
             return NoContent();
