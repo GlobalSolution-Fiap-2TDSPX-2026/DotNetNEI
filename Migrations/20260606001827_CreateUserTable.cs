@@ -18,8 +18,7 @@ namespace NEI.Migrations
                         .Annotation("Oracle:Identity", "START WITH 1 INCREMENT BY 1"),
                     USERNAME = table.Column<string>(type: "NVARCHAR2(80)", maxLength: 80, nullable: false),
                     EMAIL = table.Column<string>(type: "NVARCHAR2(150)", maxLength: 150, nullable: false),
-                    ROLE = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    IS_ACTIVE = table.Column<bool>(type: "NUMBER(1)", nullable: false)
+                    ROLE = table.Column<int>(type: "NUMBER(10)", nullable: false)
                 },
                 constraints: table =>
                 {

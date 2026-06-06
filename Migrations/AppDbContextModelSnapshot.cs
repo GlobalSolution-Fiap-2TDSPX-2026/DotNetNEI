@@ -198,10 +198,6 @@ namespace NEI.Migrations
                         .HasColumnType("NVARCHAR2(150)")
                         .HasColumnName("EMAIL");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("IS_ACTIVE");
-
                     b.Property<int>("Role")
                         .HasColumnType("NUMBER(10)")
                         .HasColumnName("ROLE");

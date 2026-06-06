@@ -29,10 +29,6 @@ public class User
     [Column("ROLE")]
     public Role Role { get; set; }
 
-    [Required]
-    [Column("IS_ACTIVE")]
-    public bool IsActive { get; set; }
-
     public void Update(string username, string email, Role role)
     {
         this.Username = username;

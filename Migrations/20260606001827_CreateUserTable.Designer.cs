@@ -12,7 +12,7 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace NEI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260605230750_CreateUserTable")]
+    [Migration("20260606001827_CreateUserTable")]
     partial class CreateUserTable
     {
         /// <inheritdoc />
@@ -200,10 +200,6 @@ namespace NEI.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("NVARCHAR2(150)")
                         .HasColumnName("EMAIL");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("IS_ACTIVE");
 
                     b.Property<int>("Role")
                         .HasColumnType("NUMBER(10)")
