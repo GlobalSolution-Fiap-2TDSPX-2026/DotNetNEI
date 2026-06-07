@@ -265,7 +265,7 @@ Update-Package
 **Via Package Manager Console (recomendado):**
  
 1. **Tools** → **NuGet Package Manager** → **Package Manager Console**
-2. Certifique-se de que o projeto padrão é **NEI** (dropdown no topo da janela)
+2. Certifique-se de que o projeto padrão é **DotNetNEI** (dropdown no topo da janela)
 3. Execute:
 ```powershell
 Update-Database
