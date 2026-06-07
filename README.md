@@ -213,6 +213,7 @@ flowchart TD
 2. Clique em **File** → **Clone a Repository...**
 3. Cole a URL: `https://github.com/GlobalSolution-Fiap-2TDSPX-2026/DotNetNEI.git`
 4. Escolha a pasta local e clique em **Clone**
+
 **Opção B — Pelo terminal (PowerShell):**
 ```powershell
 git clone https://github.com/GlobalSolution-Fiap-2TDSPX-2026/DotNetNEI.git
