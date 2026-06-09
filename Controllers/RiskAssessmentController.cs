@@ -41,7 +41,7 @@ namespace NEI
         public async Task<IActionResult> GetById(int id)
         {
             var assessment = await _context.RiskAssessments.FindAsync(id);
-            if (assessment == null) return NotFound();
+            if (assessment == null) return NotFound($"Avaliação de risco de id {id} não encontrada!");
             return Ok(assessment);
         }
 

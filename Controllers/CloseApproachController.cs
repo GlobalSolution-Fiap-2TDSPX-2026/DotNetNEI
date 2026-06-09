@@ -41,7 +41,7 @@ namespace NEI
         public async Task<IActionResult> GetById(int id)
         {
             var approach = await _context.CloseApproaches.FindAsync(id);
-            if (approach == null) return NotFound();
+            if (approach == null) return NotFound($"Aproximação de id {id} não encontrada!");
             return Ok(approach);
         }
 

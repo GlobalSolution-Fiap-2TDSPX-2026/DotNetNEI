@@ -49,6 +49,7 @@ namespace NEI
         public async Task<IActionResult> GetById(int id)
         {
             var zone = await _context.RiskZones.FindAsync(id);
+            if (zone == null) return NotFound($"Zona de id {id} não encontrada!");
             return Ok(zone);
         }
 

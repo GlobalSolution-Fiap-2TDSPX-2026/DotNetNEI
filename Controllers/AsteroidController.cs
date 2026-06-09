@@ -43,7 +43,7 @@ namespace NEI
         public async Task<IActionResult> GetById(int id)
         {
             var asteroid = await _context.Asteroids.FindAsync(id);
-            if (asteroid == null) return NotFound();
+            if (asteroid == null) return NotFound($"Asteroid de id {id} não encontrado!");
             return Ok(asteroid);
         }
 

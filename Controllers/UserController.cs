@@ -43,7 +43,7 @@ namespace NEI
         public async Task<IActionResult> GetById(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound();
+            if (user == null) return NotFound($"Usuário de id {id} não encontrado!");
             return Ok(user);
         }
 
